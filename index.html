@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Layover hotels</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EBED; --surface:#F6F7F8; --ink:#14212B; --muted:#56666F; --line:#C9D0D5;
+  --accent:#F2C230; --accent-ink:#14212B; --bad:#B3261E; --focus:#1C5FA8;
+  --sans:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F171D; --surface:#17232B; --ink:#E7ECEF; --muted:#9AA9B3; --line:#2A3A44;
+    --bad:#FF8A80; --focus:#7DB4F0; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F171D; --surface:#17232B; --ink:#E7ECEF; --muted:#9AA9B3; --line:#2A3A44;
+  --bad:#FF8A80; --focus:#7DB4F0; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:400 17px/1.45 var(--sans);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+#app{min-height:100%}
+.pane{min-width:0}
+#app[data-view="list"] #detail{display:none}
+#app[data-view="detail"] #list{display:none}
+
+/* lock screen */
+.lockwrap{max-width:420px;margin:0 auto;padding:56px 20px}
+.lockwrap h1{margin-bottom:10px}
+.lockwrap p{margin:0 0 14px;color:var(--muted)}
+.lockwrap input[type=password]{width:100%;height:46px;padding:0 14px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);font-size:16px;margin-bottom:14px}
+
+/* list pane */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.titlerow{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{margin:0;font:700 34px/1 var(--cond);letter-spacing:.01em}
+.sync{font-size:14px;color:var(--muted)}
+.sync b{font-weight:600;color:var(--ink)}
+.lockbtn{border:0;background:none;padding:0 0 0 10px;font-size:14px;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.searchrow{display:flex;gap:10px;margin-top:12px}
+.search{flex:1;min-width:0;height:46px;padding:0 14px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);font-size:16px}
+.btn{height:46px;padding:0 18px;border-radius:6px;border:1.5px solid var(--ink);background:transparent;font-weight:600;font-size:16px;white-space:nowrap}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn.link{border-color:transparent;padding:0 6px;text-decoration:underline;text-underline-offset:3px}
+.rows{list-style:none;margin:0;padding:0 0 40px}
+.row{display:grid;grid-template-columns:76px 1fr;gap:0 12px;align-items:start;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:14px 16px;min-height:64px}
+.row[aria-current="true"]{background:var(--surface);box-shadow:inset 4px 0 0 var(--accent)}
+.code{font:700 34px/1 var(--cond);letter-spacing:.02em;min-height:34px;padding-bottom:2px}
+.code.first{border-bottom:3px solid var(--accent);display:inline-block;width:max-content}
+.rname{font-weight:600;line-height:1.25}
+.rmeta{font-size:15px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty{padding:40px 24px;color:var(--muted);max-width:34ch}
+.empty p{margin:0 0 16px}
+
+/* detail pane */
+.dtop{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line);min-height:62px}
+.dbody{padding:20px 18px 60px;max-width:640px}
+.dcode{font:700 56px/0.95 var(--cond);letter-spacing:.02em;display:inline-block;border-bottom:4px solid var(--accent);padding-bottom:4px}
+.dname{font-size:24px;font-weight:600;line-height:1.2;margin:12px 0 6px}
+.dsec{margin-top:22px}
+.dsec h2{margin:0 0 4px;font:600 15px/1.2 var(--sans);color:var(--muted);letter-spacing:.02em}
+.dsec p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.dsec a{color:var(--focus)}
+.placeholder{display:none;padding:60px 32px;color:var(--muted)}
+
+/* form */
+.field{margin-top:18px}
+.field label,.field .lbl{display:block;font-weight:600;font-size:15px;margin-bottom:6px}
+.field input,.field textarea{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);font-size:16px;line-height:1.4}
+.field textarea{min-height:92px;resize:vertical}
+.two{display:grid;grid-template-columns:96px 1fr;gap:12px}
+.seg{display:flex;gap:8px}
+.seg button{min-width:84px;height:46px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.sub{margin-top:10px}
+.field .chk{display:flex;align-items:center;gap:12px;min-height:46px}
+.field .chk input{width:24px;height:24px;margin:0;padding:0;flex:none;accent-color:var(--accent)}
+.field .chk label{display:inline;margin:0;font-weight:500;font-size:17px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:6px;font-size:15px;max-width:90vw;z-index:20;opacity:0;pointer-events:none;transition:opacity .15s}
+.toast.show{opacity:1}
+
+@media (min-width:860px){
+  #app{display:grid;grid-template-columns:360px 1fr;height:100%;min-height:0}
+  #app[data-view] #list,#app[data-view] #detail{display:block}
+  .pane{overflow-y:auto;height:100%}
+  #list{border-right:1px solid var(--line)}
+  .backbtn{display:none}
+  .placeholder.show{display:block}
+  .dbody{padding:28px 40px 60px}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<form class="lockwrap" id="lock" hidden>
+  <h1>Layover hotels</h1>
+  <p>Enter your hotels password. Use the same password on each device.</p>
+  <input type="text" name="username" value="LayoverHotels" autocomplete="username" hidden>
+  <input type="password" id="pw" name="password" autocomplete="current-password" minlength="10" required aria-label="Password">
+  <button class="btn primary">Unlock</button>
+</form>
+<div id="app" data-view="list" hidden>
+  <section class="pane" id="list" aria-label="Hotel list"></section>
+  <section class="pane" id="detail" aria-label="Hotel details"></section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="hotels.js"></script>
+<script>
+(function(){
+  // Local runs (localhost) use the local Worker, so a preview never touches real data.
+  var SYNC_URL = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'http://127.0.0.1:8788/s/' : 'https://layoverhotels-sync.matttrips-sync.workers.dev/s/';
+  var doc = Hotels.emptyDoc();
+  try { doc = JSON.parse(localStorage.getItem('layoverhotels:doc')) || doc; } catch(e){}
+  if (!doc || typeof doc.hotels !== 'object' || !doc.hotels) doc = Hotels.emptyDoc();
+  var sel = null;        // selected hotel id
+  var draft = null;      // hotel being edited
+  var isNew = false;
+  var query = '';
+  var confirmDel = false;
+  var syncState = '';    // '' (not yet), 'ok', or 'fail'
+  var $list = document.getElementById('list');
+  var $detail = document.getElementById('detail');
+  var $app = document.getElementById('app');
+  var $toast = document.getElementById('toast');
+  var toastTimer = null;
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function toast(msg){
+    $toast.textContent = msg;
+    $toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ $toast.classList.remove('show'); }, 3200);
+  }
+
+  /* ---------- storage and sync: each device with the same password gets the newest copy of each hotel ---------- */
+  function syncKey(){ try { return localStorage.getItem('layoverhotels:sync'); } catch(e){ return null; } }
+  function saveLocal(){ try { localStorage.setItem('layoverhotels:doc', JSON.stringify(doc)); } catch(e){} }
+  /** Apply one change to the doc with the current time, then save, show, and sync it. */
+  function change(fn){ fn(doc, Date.now()); saveLocal(); render(); syncSoon(); }
+  var syncTimer;
+  function syncSoon(){ clearTimeout(syncTimer); syncTimer = setTimeout(sync, 1000); }
+  async function sync(){
+    var k = syncKey(); if (!k) return;
+    try {
+      var res = await fetch(SYNC_URL + k, {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(doc)});
+      if (!res.ok) throw new Error('sync ' + res.status);
+      doc = Hotels.mergeDocs(doc, await res.json()); // keeps edits made while the request was out
+      saveLocal(); syncState = 'ok';
+    } catch(e){ syncState = 'fail'; } // no network: the next change, launch, or 'online' event tries again
+    render();
+  }
+  /** The sync key for a password: SHA-256, as base64url. The same password gives the same key on each device. */
+  async function syncKeyFor(password){
+    var hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('layoverhotels-sync:' + password));
+    return btoa(String.fromCharCode.apply(null, new Uint8Array(hash))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  document.getElementById('lock').addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    var pw = document.getElementById('pw');
+    localStorage.setItem('layoverhotels:sync', await syncKeyFor(pw.value));
+    pw.value = '';
+    syncState = ''; render(); sync();
+  });
+
+  /* ---------- helpers ---------- */
+  function fmtDate(s){
+    if (!s) return '';
+    var d = new Date(s + 'T12:00:00');
+    return isNaN(d) ? s : d.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
+  }
+  function view(){
+    $app.dataset.view = (sel || draft) ? 'detail' : 'list';
+  }
+
+  /* ---------- render list ---------- */
+  function renderList(){
+    var items = Hotels.listHotels(doc, query);
+    var total = Hotels.listHotels(doc, '').length;
+    var status = syncState === 'ok' ? '<b>Synced</b> across devices' : syncState === 'fail' ? 'Saved on this device' : 'Syncing…';
+    var html = '<div class="top"><div class="titlerow"><h1>Layovers</h1><span class="sync">' + status +
+      '<button class="lockbtn" data-act="lock" title="Forget the password and the hotels on this device">Lock</button></span></div>' +
+      '<div class="searchrow"><input class="search" id="q" type="search" placeholder="Search city, hotel, notes" value="' + esc(query) + '" aria-label="Search hotels">' +
+      '<button class="btn primary" data-act="new">Add hotel</button></div></div>';
+    if (!items.length){
+      html += '<div class="empty">' + (total
+        ? '<p>No hotels match that search.</p>'
+        : '<p>No hotels yet. Add the first one while it’s fresh from your last layover.</p><button class="btn primary" data-act="new">Add hotel</button>') + '</div>';
+    } else {
+      html += '<ul class="rows">';
+      var prev = null;
+      items.forEach(function(h){
+        var first = h.airport !== prev; prev = h.airport;
+        var meta = [h.address, h.lastStay ? 'Stayed ' + fmtDate(h.lastStay) : ''].filter(Boolean).join(' – ');
+        html += '<li><button class="row" data-act="open" data-id="' + esc(h.id) + '"' + (h.id === sel ? ' aria-current="true"' : '') + '>' +
+          '<span class="code' + (first ? ' first' : '') + '">' + (first ? esc(h.airport || '—') : '') + '</span>' +
+          '<span><div class="rname">' + esc(h.name || 'Untitled hotel') + '</div>' +
+          '<div class="rmeta">' + esc(meta) + '</div></span></button></li>';
+      });
+      html += '</ul>';
+    }
+    var hadFocus = document.activeElement && document.activeElement.id === 'q';
+    var pos = hadFocus ? document.activeElement.selectionStart : 0;
+    $list.innerHTML = html;
+    if (hadFocus){
+      var qi = document.getElementById('q'); qi.focus();
+      try { qi.setSelectionRange(pos, pos); } catch(e){}
+    }
+  }
+
+  /* ---------- render detail ---------- */
+  function sec(title, body){
+    if (!body) return '';
+    return '<div class="dsec"><h2>' + esc(title) + '</h2><p>' + body + '</p></div>';
+  }
+  function renderDetail(){
+    if (!sel && !draft){
+      $detail.innerHTML = '<div class="placeholder show">Select a hotel from the list, or add a new one.</div>';
+      return;
+    }
+    if (draft){ renderForm(); return; }
+    var h = Hotels.getHotel(doc, sel);
+    if (!h){ sel = null; view(); renderDetail(); return; }
+    var phone = h.phone ? '<a href="tel:' + esc(h.phone.replace(/[^+\d]/g,'')) + '">' + esc(h.phone) + '</a>' : '';
+    var addr = h.address ? '<a href="https://maps.apple.com/?q=' + encodeURIComponent(h.name + ' ' + h.address) + '" target="_blank" rel="noopener">' + esc(h.address) + '</a>' : '';
+    $detail.innerHTML =
+      '<div class="dtop"><button class="btn link backbtn" data-act="back">All hotels</button><button class="btn" data-act="edit">Edit</button></div>' +
+      '<div class="dbody"><div class="dcode">' + esc(h.airport || '—') + '</div>' +
+      '<div class="dname">' + esc(h.name || 'Untitled hotel') + '</div>' +
+      sec('Address', addr) + sec('Phone', phone) +
+      sec('Free breakfast', esc(Hotels.ynText(h.breakfast, h.breakfastHours))) +
+      sec('Happy hour', esc(Hotels.ynText(h.happyHour, h.happyHourHours))) +
+      sec('Food nearby', esc(h.food)) +
+      sec('Gym and running', esc([h.gym24 ? 'Open 24 hours' : (h.gymHours ? 'Gym hours: ' + h.gymHours : ''), h.lapPool ? 'Lap pool' + (h.poolHours ? ' – hours: ' + h.poolHours : '') : (h.poolHours ? 'Pool hours: ' + h.poolHours : ''), h.fitness].filter(Boolean).join('\n'))) +
+      sec('Water', esc([h.plasticBottle ? 'Plastic water bottle provided' : '', h.byobBottle ? 'BYOB plastic bottle' : '', h.filter ? 'Filter available' : ''].filter(Boolean).join('\n'))) +
+      sec('Notes', esc(h.notes)) + sec('Last stayed', esc(fmtDate(h.lastStay))) +
+      '</div>';
+  }
+  function renderForm(){
+    var d = draft;
+    function ta(k, label, ph){
+      return '<div class="field"><label for="f-' + k + '">' + label + '</label><textarea id="f-' + k + '" data-f="' + k + '" placeholder="' + esc(ph) + '">' + esc(d[k]) + '</textarea></div>';
+    }
+    function yn(k, label){
+      return '<div class="field"><span class="lbl">' + label + '</span><div class="seg">' +
+        '<button type="button" data-act="yn" data-k="' + k + '" data-v="yes" aria-pressed="' + (d[k] === 'yes') + '">Yes</button>' +
+        '<button type="button" data-act="yn" data-k="' + k + '" data-v="no" aria-pressed="' + (d[k] === 'no') + '">No</button></div>' +
+        '<div class="sub"><input id="f-' + k + 'Hours" data-f="' + k + 'Hours" autocomplete="off" aria-label="' + label + ' hours" placeholder="Hours" value="' + esc(d[k + 'Hours']) + '"></div></div>';
+    }
+    function chk(k, label){
+      return '<div class="chk"><input type="checkbox" id="c-' + k + '" data-c="' + k + '"' + (d[k] ? ' checked' : '') + '><label for="c-' + k + '">' + label + '</label></div>';
+    }
+    $detail.innerHTML =
+      '<div class="dtop"><button class="btn link" data-act="cancel">Cancel</button><button class="btn primary" data-act="save">Save</button></div>' +
+      '<div class="dbody"><div class="two"><div class="field"><label for="f-airport">Airport</label><input id="f-airport" data-f="airport" maxlength="3" autocapitalize="characters" autocorrect="off" spellcheck="false" autocomplete="off" value="' + esc(d.airport) + '" placeholder="MEM"></div>' +
+      '<div class="field"><label for="f-name">Hotel</label><input id="f-name" data-f="name" autocomplete="off" value="' + esc(d.name) + '"></div></div>' +
+      '<div class="field"><label for="f-address">Address</label><input id="f-address" data-f="address" autocomplete="off" value="' + esc(d.address) + '"></div>' +
+      '<div class="field"><label for="f-phone">Phone</label><input id="f-phone" data-f="phone" type="tel" value="' + esc(d.phone) + '"></div>' +
+      yn('breakfast', 'Free breakfast') +
+      yn('happyHour', 'Happy hour') +
+      ta('food', 'Food nearby', 'Places that are open late or early') +
+      '<div class="field"><span class="lbl">Gym and running</span>' + chk('gym24', 'Gym open 24 hours') +
+      '<div class="sub" id="gymHoursWrap"' + (d.gym24 ? ' hidden' : '') + '><input id="f-gymHours" data-f="gymHours" autocomplete="off" aria-label="Gym hours" placeholder="Gym hours" value="' + esc(d.gymHours) + '"></div>' +
+      chk('lapPool', 'Lap pool') +
+      '<div class="sub"><input id="f-poolHours" data-f="poolHours" autocomplete="off" aria-label="Pool hours" placeholder="Pool hours" value="' + esc(d.poolHours) + '"></div></div>' +
+      ta('fitness', 'Gym and running notes', 'Safe routes, trails, equipment') +
+      '<div class="field"><span class="lbl">Water</span>' + chk('plasticBottle', 'Plastic water bottle provided') + chk('byobBottle', 'BYOB plastic bottle') + chk('filter', 'Filter available') + '</div>' +
+      ta('notes', 'Notes', 'Room requests, noise, quirks') +
+      '<div class="field"><label for="f-lastStay">Last stayed</label><input id="f-lastStay" data-f="lastStay" type="date" value="' + esc(d.lastStay) + '"></div>' +
+      '<div class="actions"><button class="btn primary" data-act="save">Save</button>' +
+      (!isNew ? (confirmDel
+        ? '<button class="btn danger" data-act="delete-yes">Yes, delete this hotel</button><button class="btn" data-act="delete-no">Keep it</button>'
+        : '<button class="btn danger" data-act="delete">Delete</button>') : '') +
+      '</div></div>';
+  }
+
+  function renderAll(){ view(); renderList(); renderDetail(); }
+  /** Show the lock screen or the app. While a form is open only the list is rebuilt, so what is typed stays. */
+  function render(){
+    var locked = !syncKey();
+    document.getElementById('lock').hidden = !locked;
+    $app.hidden = locked;
+    if (locked) return;
+    if (draft) renderList(); else renderAll();
+  }
+
+  /* ---------- events ---------- */
+  document.addEventListener('click', function(e){
+    var el = e.target.closest('[data-act]'); if (!el) return;
+    var act = el.dataset.act;
+    if (act === 'new'){
+      var cur = Hotels.getHotel(doc, sel);
+      draft = Object.assign({id: Hotels.newId(Date.now())}, Hotels.EMPTY, {airport: Hotels.defaultCode(query, cur && cur.airport)});
+      isNew = true; sel = draft.id; confirmDel = false; renderAll();
+      window.scrollTo(0,0);
+    } else if (act === 'open'){
+      sel = el.dataset.id; draft = null; confirmDel = false; renderAll(); window.scrollTo(0,0);
+    } else if (act === 'back'){
+      sel = null; draft = null; renderAll();
+    } else if (act === 'edit'){
+      var h = Hotels.getHotel(doc, sel);
+      if (!h) return;
+      draft = h; isNew = false; confirmDel = false; renderAll();
+    } else if (act === 'cancel'){
+      draft = null; if (isNew) sel = null; isNew = false; confirmDel = false; renderAll();
+    } else if (act === 'yn'){
+      var k = el.dataset.k, v = el.dataset.v;
+      draft[k] = draft[k] === v ? '' : v;
+      document.querySelectorAll('[data-act="yn"][data-k="' + k + '"]').forEach(function(b){
+        b.setAttribute('aria-pressed', String(draft[k] === b.dataset.v));
+      });
+    } else if (act === 'save'){
+      var problem = Hotels.hotelProblem(draft);
+      if (problem){ toast(problem); return; }
+      var saved = draft;
+      sel = saved.id; draft = null; isNew = false; confirmDel = false;
+      change(function(d, now){ Hotels.saveHotel(d, saved, now); });
+      toast('Saved');
+    } else if (act === 'delete'){
+      confirmDel = true; renderForm();
+    } else if (act === 'delete-no'){
+      confirmDel = false; renderForm();
+    } else if (act === 'delete-yes'){
+      var id = draft.id;
+      draft = null; sel = null; isNew = false; confirmDel = false;
+      change(function(d, now){ Hotels.removeHotel(d, id, now); });
+      toast('Deleted');
+    } else if (act === 'lock'){
+      try { localStorage.removeItem('layoverhotels:sync'); localStorage.removeItem('layoverhotels:doc'); } catch(err){}
+      doc = Hotels.emptyDoc(); sel = null; draft = null; isNew = false; query = ''; syncState = '';
+      render();
+    }
+  });
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if (t.id === 'q'){ query = t.value; renderList(); return; }
+    if (t.dataset && t.dataset.c && draft){
+      draft[t.dataset.c] = t.checked;
+      if (t.dataset.c === 'gym24'){ var w = document.getElementById('gymHoursWrap'); if (w) w.hidden = t.checked; }
+      return;
+    }
+    if (t.dataset && t.dataset.f && draft){
+      draft[t.dataset.f] = t.dataset.f === 'airport' ? t.value.replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() : t.value;
+      if (t.dataset.f === 'airport') t.value = draft.airport;
+    }
+  });
+  document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'visible') sync(); });
+  addEventListener('online', sync);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+
+  /* ---------- boot ---------- */
+  render();
+  sync();
+})();
+</script>
+</body>
+</html>

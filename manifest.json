@@ -1,0 +1,9 @@
+{
+  "name": "Layover hotels",
+  "short_name": "Layovers",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#E8EBED",
+  "theme_color": "#F2C230"
+}
