@@ -30,10 +30,17 @@ test('a saved hotel: kept with every field, text and checkboxes defaulted, and t
     hotel: {
       airport: 'MEM', name: 'Test Inn', address: '', phone: '', breakfast: '', breakfastHours: '', happyHour: '', happyHourHours: '',
       gym24: false, gymHours: '', lapPool: false, poolHours: '', plasticBottle: false, byobBottle: false, filter: false,
-      food: '', fitness: '', notes: '', lastStay: '',
+      food: '', fitness: '', discounts: '', notes: '', lastStay: '',
     },
   });
   assert.deepEqual(H.getHotel(doc, 'h1'), { id: 'h1', ...doc.hotels.h1.hotel });
+});
+
+test('a hotel with discounts and amenities: kept as text, and a search finds it', () => {
+  const doc = H.emptyDoc();
+  H.saveHotel(doc, { id: 'h1', airport: 'MEM', name: 'Test Inn', discounts: 'Crew rate $89, free parking' }, 1);
+  assert.equal(doc.hotels.h1.hotel.discounts, 'Crew rate $89, free parking');
+  assert.deepEqual(H.listHotels(doc, 'crew rate').map(h => h.id), ['h1']);
 });
 
 test('a hotel with all its details: kept as given; checkboxes are true or false, other fields are dropped', () => {

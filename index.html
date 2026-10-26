@@ -258,6 +258,7 @@ h1{margin:0;font:700 34px/1 var(--cond);letter-spacing:.01em}
       sec('Food nearby', esc(h.food)) +
       sec('Gym and running', esc([h.gym24 ? 'Open 24 hours' : (h.gymHours ? 'Gym hours: ' + h.gymHours : ''), h.lapPool ? 'Lap pool' + (h.poolHours ? ' – hours: ' + h.poolHours : '') : (h.poolHours ? 'Pool hours: ' + h.poolHours : ''), h.fitness].filter(Boolean).join('\n'))) +
       sec('Water', esc([h.plasticBottle ? 'Plastic water bottle provided' : '', h.byobBottle ? 'BYOB plastic bottle' : '', h.filter ? 'Filter available' : ''].filter(Boolean).join('\n'))) +
+      sec('Discounts and amenities', esc(h.discounts)) +
       sec('Notes', esc(h.notes)) + sec('Last stayed', esc(fmtDate(h.lastStay))) +
       '</div>';
   }
@@ -290,6 +291,7 @@ h1{margin:0;font:700 34px/1 var(--cond);letter-spacing:.01em}
       '<div class="sub"><input id="f-poolHours" data-f="poolHours" autocomplete="off" aria-label="Pool hours" placeholder="Pool hours" value="' + esc(d.poolHours) + '"></div></div>' +
       ta('fitness', 'Gym and running notes', 'Safe routes, trails, equipment') +
       '<div class="field"><span class="lbl">Water</span>' + chk('plasticBottle', 'Plastic water bottle provided') + chk('byobBottle', 'BYOB plastic bottle') + chk('filter', 'Filter available') + '</div>' +
+      ta('discounts', 'Discounts and amenities', 'Crew rate, parking, laundry, shuttle') +
       ta('notes', 'Notes', 'Room requests, noise, quirks') +
       '<div class="field"><label for="f-lastStay">Last stayed</label><input id="f-lastStay" data-f="lastStay" type="date" value="' + esc(d.lastStay) + '"></div>' +
       '<div class="actions"><button class="btn primary" data-act="save">Save</button>' +

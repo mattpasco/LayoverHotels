@@ -16,7 +16,7 @@ var EMPTY = {
   breakfast: '', breakfastHours: '', happyHour: '', happyHourHours: '',
   gym24: false, gymHours: '', lapPool: false, poolHours: '',
   plasticBottle: false, byobBottle: false, filter: false,
-  food: '', fitness: '', notes: '', lastStay: '',
+  food: '', fitness: '', discounts: '', notes: '', lastStay: '',
 };
 
 function emptyDoc() { return { hotels: {} }; }
@@ -56,7 +56,7 @@ function listHotels(doc, query) {
   return Object.keys(doc.hotels).filter(function (id) { return live(doc.hotels[id]); }).map(function (id) {
     return Object.assign({ id: id }, doc.hotels[id].hotel);
   }).filter(function (h) {
-    return !q || [h.airport, h.name, h.address, h.food, h.fitness, h.notes].join(' ').toLowerCase().indexOf(q) >= 0;
+    return !q || [h.airport, h.name, h.address, h.food, h.fitness, h.discounts, h.notes].join(' ').toLowerCase().indexOf(q) >= 0;
   }).sort(function (a, b) {
     return a.airport !== b.airport ? (a.airport < b.airport ? -1 : 1) : a.name.localeCompare(b.name);
   });
